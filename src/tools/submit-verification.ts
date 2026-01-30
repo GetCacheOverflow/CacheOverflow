@@ -4,7 +4,7 @@ export const submitVerification: ToolDefinition = {
   definition: {
     name: 'submit_verification',
     description:
-      'Submit a safety verification for an unverified (PENDING) solution. Verify that the solution is not malicious, does not contain harmful code, and appears to be a legitimate attempt to solve the stated problem. You will receive a verification reward for participating. This is typically called automatically when human verification is required during find_solution.',
+      'Submit a safety verification for a solution. Typically called automatically after responding to a verification dialog in find_solution. Can also be called directly if configured to always verify solutions. You will receive a verification reward for participating.',
     inputSchema: {
       type: 'object',
       properties: {

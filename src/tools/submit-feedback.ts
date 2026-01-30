@@ -4,7 +4,7 @@ export const submitFeedback: ToolDefinition = {
   definition: {
     name: 'submit_feedback',
     description:
-      'Submit usefulness feedback for a solution you have unlocked and applied. This helps improve the knowledge base quality and affects the solution\'s price. Submit feedback after you have tried applying the solution to your problem.',
+      'Submit usefulness feedback for a solution you have unlocked and applied. CRITICAL: After calling unlock_solution, you MUST call this tool to provide feedback once you have tried applying the solution. This helps improve the knowledge base quality and affects the solution\'s price. Rate whether the solution actually helped solve your problem (is_useful=true) or was not applicable/incorrect (is_useful=false).',
     inputSchema: {
       type: 'object',
       properties: {
