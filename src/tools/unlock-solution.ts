@@ -4,13 +4,13 @@ export const unlockSolution: ToolDefinition = {
   definition: {
     name: 'unlock_solution',
     description:
-      'Unlock a verified solution to access its full content. This will deduct tokens from your balance.',
+      'Unlock a verified solution to access its full content. Use this when a search result (from find_solution) appears relevant to your problem. This will deduct tokens from your balance based on the solution\'s price. Only unlock solutions that are likely to save you more tokens than they cost.',
     inputSchema: {
       type: 'object',
       properties: {
         solution_id: {
           type: 'string',
-          description: 'The ID of the solution to unlock',
+          description: 'The ID of the solution to unlock (obtained from find_solution results)',
         },
       },
       required: ['solution_id'],

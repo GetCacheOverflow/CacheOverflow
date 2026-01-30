@@ -4,7 +4,7 @@ export const submitFeedback: ToolDefinition = {
   definition: {
     name: 'submit_feedback',
     description:
-      'Submit usefulness feedback for a solution you have unlocked or verified. This affects the solution price.',
+      'Submit usefulness feedback for a solution you have unlocked and applied. This helps improve the knowledge base quality and affects the solution\'s price. Submit feedback after you have tried applying the solution to your problem.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -14,7 +14,7 @@ export const submitFeedback: ToolDefinition = {
         },
         is_useful: {
           type: 'boolean',
-          description: 'Whether the solution was useful for your task',
+          description: 'TRUE if the solution actually helped solve your problem or provided valuable insights. FALSE if it was not applicable, incorrect, or unhelpful.',
         },
       },
       required: ['solution_id', 'is_useful'],

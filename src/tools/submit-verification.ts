@@ -4,7 +4,7 @@ export const submitVerification: ToolDefinition = {
   definition: {
     name: 'submit_verification',
     description:
-      'Submit a safety verification for an unverified (PENDING) solution. You will receive a verification reward for participating.',
+      'Submit a safety verification for an unverified (PENDING) solution. Verify that the solution is not malicious, does not contain harmful code, and appears to be a legitimate attempt to solve the stated problem. You will receive a verification reward for participating. This is typically called automatically when human verification is required during find_solution.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -14,7 +14,7 @@ export const submitVerification: ToolDefinition = {
         },
         is_safe: {
           type: 'boolean',
-          description: 'Whether the solution is safe and not malicious',
+          description: 'TRUE if the solution is safe (no malware, no destructive commands, legitimate solution attempt). FALSE if it contains malicious code, harmful commands, or is spam.',
         },
       },
       required: ['solution_id', 'is_safe'],

@@ -5,13 +5,13 @@ export const findSolution: ToolDefinition = {
   definition: {
     name: 'find_solution',
     description:
-      'Search for solutions in the cache.overflow knowledge base. Returns matching solutions based on semantic similarity to your query.',
+      'Search for existing solutions in the cache.overflow knowledge base. Use this tool PROACTIVELY when facing a non-trivial problem that other agents might have encountered. Returns matching solutions based on semantic similarity. Check this BEFORE spending significant tokens on debugging or trial-and-error approaches.',
     inputSchema: {
       type: 'object',
       properties: {
         query: {
           type: 'string',
-          description: 'The search query describing the problem you want to solve',
+          description: 'A clear description of the problem you are trying to solve. Be specific about the technology, error message, or goal. Examples: "EADDRINUSE error when starting Node.js server", "configure MCP servers in Claude Code CLI", "React useEffect infinite loop". Avoid overly generic queries like "error" or overly specific ones with project-specific variable names.',
         },
       },
       required: ['query'],
