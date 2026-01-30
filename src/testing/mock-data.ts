@@ -70,6 +70,14 @@ export const mockFindResults: FindSolutionResult[] = [
   {
     solution_id: 'sol_002',
     query_title: 'Fix memory leak in Node.js event listeners',
+    solution_body: `// Always remove event listeners when done
+const handler = () => { /* ... */ };
+emitter.on('event', handler);
+// Later:
+emitter.off('event', handler);
+
+// Or use once() for one-time listeners
+emitter.once('event', () => { /* ... */ });`,
     human_verification_required: true,
   },
   {

@@ -32,9 +32,9 @@ const generateHTML = (title: string, body?: string): string => `
     .card {
       background: linear-gradient(145deg, rgba(30, 30, 32, 0.9), rgba(20, 20, 22, 0.95));
       border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 16px;
-      padding: 32px;
-      max-width: 480px;
+      border-radius: 20px;
+      padding: 48px;
+      max-width: 800px;
       width: 100%;
       backdrop-filter: blur(20px);
       box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
@@ -43,17 +43,17 @@ const generateHTML = (title: string, body?: string): string => `
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       background: rgba(139, 92, 246, 0.15);
       border: 1px solid rgba(139, 92, 246, 0.3);
       color: #A78BFA;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      margin-bottom: 20px;
+      padding: 10px 18px;
+      border-radius: 24px;
+      margin-bottom: 28px;
     }
 
     .badge::before {
@@ -71,41 +71,41 @@ const generateHTML = (title: string, body?: string): string => `
     }
 
     h1 {
-      font-size: 22px;
+      font-size: 32px;
       font-weight: 600;
       color: #fff;
-      margin-bottom: 8px;
-      letter-spacing: -0.3px;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
     }
 
     .subtitle {
-      font-size: 14px;
+      font-size: 18px;
       color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 24px;
+      margin-bottom: 32px;
       line-height: 1.5;
     }
 
     .solution-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 28px;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 36px;
     }
 
     .solution-title {
-      font-size: 15px;
+      font-size: 20px;
       font-weight: 500;
       color: #fff;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       line-height: 1.4;
     }
 
     .solution-body {
-      font-size: 13px;
-      line-height: 1.7;
+      font-size: 16px;
+      line-height: 1.8;
       color: rgba(255, 255, 255, 0.6);
-      max-height: 180px;
+      max-height: 280px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-wrap: break-word;
@@ -126,16 +126,16 @@ const generateHTML = (title: string, body?: string): string => `
 
     .buttons {
       display: flex;
-      gap: 12px;
+      gap: 16px;
     }
 
     .btn {
       flex: 1;
-      padding: 16px 24px;
+      padding: 22px 36px;
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       font-family: inherit;
-      font-size: 15px;
+      font-size: 20px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -173,33 +173,33 @@ const generateHTML = (title: string, body?: string): string => `
 
     .hint {
       text-align: center;
-      margin-top: 20px;
-      font-size: 12px;
+      margin-top: 28px;
+      font-size: 15px;
       color: rgba(255, 255, 255, 0.3);
     }
 
     .hint kbd {
       background: rgba(255, 255, 255, 0.1);
-      padding: 3px 8px;
-      border-radius: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
       font-family: inherit;
-      font-size: 11px;
+      font-size: 14px;
     }
 
     .completed {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
     }
 
     .completed-icon {
-      width: 64px;
-      height: 64px;
+      width: 88px;
+      height: 88px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 28px;
+      margin: 0 auto 28px;
+      font-size: 40px;
     }
 
     .completed-icon.safe {
@@ -215,13 +215,13 @@ const generateHTML = (title: string, body?: string): string => `
     }
 
     .completed h2 {
-      font-size: 20px;
+      font-size: 28px;
       font-weight: 600;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .completed p {
-      font-size: 14px;
+      font-size: 18px;
       color: rgba(255, 255, 255, 0.5);
     }
   </style>
@@ -322,10 +322,10 @@ export async function showVerificationDialog(
       }
     });
 
-    server.listen(0, '127.0.0.1', () => {
+    server.listen(0, 'localhost', () => {
       const address = server.address();
       if (address && typeof address === 'object') {
-        const url = `http://127.0.0.1:${address.port}`;
+        const url = `http://localhost:${address.port}`;
         open(url);
 
         // Timeout after 5 minutes
