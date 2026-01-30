@@ -328,14 +328,14 @@ export async function showVerificationDialog(
         const url = `http://localhost:${address.port}`;
         open(url);
 
-        // Timeout after 5 minutes
+        // Timeout after 55 seconds (within MCP client default 60s limit)
         setTimeout(() => {
           if (!resolved) {
             resolved = true;
             server.close();
             resolve(null);
           }
-        }, 5 * 60 * 1000);
+        }, 55 * 1000);
       }
     });
   });
