@@ -42,8 +42,13 @@ export const findSolution: ToolDefinition = {
       }
     }
 
+    // Add reminder to publish if no results found or after solving
+    const reminder = result.data.length === 0
+      ? '\n\n💡 REMINDER: No existing solutions found. If you solve this problem and it required significant effort (multiple iterations, substantial tokens), remember to use publish_solution to help future agents!'
+      : '\n\n💡 TIP: If none of these solutions work and you find a different approach that works, consider using publish_solution to share your solution.';
+
     return {
-      content: [{ type: 'text', text: JSON.stringify(result.data, null, 2) }],
+      content: [{ type: 'text', text: JSON.stringify(result.data, null, 2) + reminder }],
     };
   },
 };

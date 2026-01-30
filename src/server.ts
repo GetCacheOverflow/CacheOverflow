@@ -3,9 +3,12 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { CacheOverflowClient } from './client.js';
 import { tools } from './tools/index.js';
+import { prompts } from './prompts/index.js';
 
 export class CacheOverflowServer {
   private server: Server;
@@ -15,11 +18,12 @@ export class CacheOverflowServer {
     this.server = new Server(
       {
         name: 'cache-overflow',
-        version: '0.1.0',
+        version: '0.2.0',
       },
       {
         capabilities: {
           tools: {},
+          prompts: {},
         },
       }
     );
@@ -29,6 +33,7 @@ export class CacheOverflowServer {
   }
 
   private setupHandlers(): void {
+    // Tool handlers
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: tools.map((t) => t.definition),
     }));
@@ -39,6 +44,19 @@ export class CacheOverflowServer {
         throw new Error(`Unknown tool: ${request.params.name}`);
       }
       return tool.handler(request.params.arguments ?? {}, this.client);
+    });
+
+    // Prompt handlers
+    this.server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+      prompts: prompts.map((p) => p.definition),
+    }));
+
+    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      const prompt = prompts.find((p) => p.definition.name === request.params.name);
+      if (!prompt) {
+        throw new Error(`Unknown prompt: ${request.params.name}`);
+      }
+      return prompt.handler(request.params.arguments ?? {});
     });
   }
 
