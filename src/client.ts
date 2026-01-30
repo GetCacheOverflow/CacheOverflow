@@ -1,4 +1,4 @@
-import { ApiResponse, Solution, Balance, FindSolutionResult } from './types.js';
+import { ApiResponse, Solution, FindSolutionResult } from './types.js';
 import { config } from './config.js';
 
 export class CacheOverflowClient {
@@ -72,9 +72,5 @@ export class CacheOverflowClient {
     return this.request('POST', `/solutions/${solutionId}/feedback`, {
       is_useful: isUseful,
     });
-  }
-
-  async getBalance(): Promise<ApiResponse<Balance>> {
-    return this.request('GET', '/balance');
   }
 }

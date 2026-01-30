@@ -5,7 +5,6 @@ import { unlockSolution } from './unlock-solution.js';
 import { publishSolution } from './publish-solution.js';
 import { submitVerification } from './submit-verification.js';
 import { submitFeedback } from './submit-feedback.js';
-import { getBalance } from './get-balance.js';
 
 export interface ToolDefinition {
   definition: Tool;
@@ -21,5 +20,4 @@ export const tools: ToolDefinition[] = [
   publishSolution,
   submitVerification,
   submitFeedback,
-  getBalance,
 ];

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { CacheOverflowClient } from './client.js';
 import { MockServer } from './testing/mock-server.js';
-import { mockSolutions, mockBalance, mockFindResults } from './testing/mock-data.js';
+import { mockSolutions, mockFindResults } from './testing/mock-data.js';
 
 describe('CacheOverflowClient', () => {
   let mockServer: MockServer;
@@ -111,22 +111,6 @@ describe('CacheOverflowClient', () => {
       const result = await client.submitFeedback(mockSolutions[0].id, false);
 
       expect(result.success).toBe(true);
-    });
-  });
-
-  describe('getBalance', () => {
-    it('should return the user balance', async () => {
-      const result = await client.getBalance();
-
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toHaveProperty('available');
-        expect(result.data).toHaveProperty('pending_debits');
-        expect(result.data).toHaveProperty('pending_credits');
-        expect(result.data).toHaveProperty('total_earned');
-        expect(result.data).toHaveProperty('total_spent');
-        expect(result.data.available).toBe(mockBalance.available);
-      }
     });
   });
 });

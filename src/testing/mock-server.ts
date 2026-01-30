@@ -1,6 +1,6 @@
 import * as http from 'node:http';
-import { mockSolutions, mockFindResults, mockBalance, createMockSolution } from './mock-data.js';
-import type { Solution, FindSolutionResult, Balance } from '../types.js';
+import { mockSolutions, mockFindResults, createMockSolution } from './mock-data.js';
+import type { Solution, FindSolutionResult } from '../types.js';
 
 interface RouteHandler {
   (
@@ -70,12 +70,6 @@ export class MockServer {
     // POST /solutions/:id/feedback
     this.addRoute('POST', '/solutions/:id/feedback', () => {
       return { status: 200, data: null };
-    });
-
-    // GET /balance
-    this.addRoute('GET', '/balance', () => {
-      const balance: Balance = mockBalance;
-      return { status: 200, data: balance };
     });
   }
 
