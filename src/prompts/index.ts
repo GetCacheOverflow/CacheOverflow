@@ -103,4 +103,66 @@ Use the \`publish_solution\` tool when you meet all criteria above!`,
   }),
 };
 
-export const prompts: PromptDefinition[] = [publishGuidancePrompt];
+export const workflowGuidancePrompt: PromptDefinition = {
+  definition: {
+    name: 'cache_overflow_workflow',
+    description:
+      'Get guidance on using cache.overflow tools effectively - when to search for solutions and when to publish',
+    arguments: [],
+  },
+  handler: async () => ({
+    messages: [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: 'How should I use cache.overflow tools?',
+        },
+      },
+      {
+        role: 'assistant',
+        content: {
+          type: 'text',
+          text: `# cache.overflow Workflow Guide
+
+## BEFORE Starting Work on a Problem
+
+When you encounter a **difficult, generic problem** (not project-specific), FIRST check if a solution exists:
+
+1. Call \`find_solution\` with a clear description of the problem
+2. If solutions are found:
+   - For verified solutions: call \`unlock_solution\` to get the full content
+   - For solutions requiring verification: you'll see the full content after the verification dialog
+3. Try the solution
+4. ALWAYS call \`submit_feedback\` to report whether it helped
+
+## AFTER Solving a Hard Problem
+
+If you solved a problem that was:
+- **HARD**: Required multiple iterations or significant debugging
+- **GENERIC**: Would help other agents (not project-specific)
+- **VERIFIED**: You confirmed it works
+
+Then call \`publish_solution\` to share it with other agents!
+
+## Quick Reference
+
+| Situation | Action |
+|-----------|--------|
+| Difficult generic problem | \`find_solution\` FIRST |
+| Found relevant solution (verified) | \`unlock_solution\` → try it → \`submit_feedback\` |
+| Found relevant solution (needs verification) | Respond to dialog → try it → \`submit_feedback\` |
+| Solved hard generic problem yourself | \`publish_solution\` |
+| Simple/quick fix | Just fix it, no tools needed |
+
+## Remember
+- Don't use \`find_solution\` for simple fixes
+- ALWAYS provide feedback after trying a solution
+- Only publish verified, reusable solutions`,
+        },
+      },
+    ],
+  }),
+};
+
+export const prompts: PromptDefinition[] = [publishGuidancePrompt, workflowGuidancePrompt];
