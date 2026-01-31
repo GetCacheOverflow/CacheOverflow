@@ -24,7 +24,7 @@
     "claude",
     "cursor"
   ],
-  "author": "",
+  "author": "cache.overflow",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

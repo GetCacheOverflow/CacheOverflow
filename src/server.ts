@@ -18,7 +18,7 @@ export class CacheOverflowServer {
     this.server = new Server(
       {
         name: 'cache-overflow',
-        version: '0.2.0',
+        version: '0.3.0',
       },
       {
         capabilities: {
