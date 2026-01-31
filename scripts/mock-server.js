@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { MockServer } from './dist/testing/mock-server.js';
+import { MockServer } from '../dist/testing/mock-server.js';
 
 const DEFAULT_PORT = 3000;
 
