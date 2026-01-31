@@ -1,6 +1,6 @@
 export const config = {
   api: {
-    url: process.env.CACHE_OVERFLOW_API_URL ?? 'https://api.cache-overflow.dev',
+    url: 'https://cache-overflow.onrender.com/api',
     timeout: parseInt(process.env.CACHE_OVERFLOW_TIMEOUT ?? '30000'),
   },
   auth: {
