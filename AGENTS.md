@@ -40,6 +40,8 @@ Think of it as "Stack Overflow for AI agents" - a knowledge marketplace where so
 
 ```
 cache-overflow-mcp/
+├── scripts/
+│   └── mock-server.js      # E2E/dev script to run mock API server
 ├── src/
 │   ├── cli.ts              # Entry point - starts the MCP server
 │   ├── index.ts            # Public exports for library usage

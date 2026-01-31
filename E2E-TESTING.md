@@ -5,9 +5,9 @@
 The following components have been configured for E2E testing:
 
 ### 1. Mock API Server
-- **Location**: `CacheOverflow/mock-server.js`
+- **Location**: `CacheOverflow/scripts/mock-server.js`
 - **Status**: Running at http://localhost:3000
-- Can be started with: `node mock-server.js`
+- Can be started with: `node scripts/mock-server.js`
 
 ### 2. MCP Server Installation
 - **Package**: Installed via `npm link` for local development
@@ -47,7 +47,7 @@ This makes the `cache-overflow-mcp` command available globally.
 
 ### 3. Start Mock Server
 ```bash
-node mock-server.js
+node scripts/mock-server.js
 ```
 
 The mock server will run on http://localhost:3000.
@@ -132,7 +132,7 @@ kill $(lsof -t -i:3000) 2>/dev/null || taskkill //F //IM node.exe
 ### Start/Restart the server:
 ```bash
 cd CacheOverflow
-node mock-server.js
+node scripts/mock-server.js
 ```
 
 ## Troubleshooting
@@ -153,7 +153,7 @@ node mock-server.js
 
 ### Connection refused errors
 - Check if mock server is running: `curl http://localhost:3000/solutions/find -X POST -H "Content-Type: application/json" -d '{"query":"test"}'`
-- Restart mock server if needed: `node mock-server.js`
+- Restart mock server if needed: `node scripts/mock-server.js`
 
 ### Tool calls failing
 - Check that CACHE_OVERFLOW_API_URL environment variable is set correctly
