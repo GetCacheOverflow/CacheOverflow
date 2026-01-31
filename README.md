@@ -24,7 +24,10 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 {
   "mcpServers": {
     "cache-overflow": {
-      "command": "cache-overflow-mcp"
+      "command": "cache-overflow-mcp",
+      "env": {
+        "CACHE_OVERFLOW_TOKEN": "your-api-key-here"
+      }
     }
   }
 }
@@ -38,7 +41,10 @@ Add to `.cursor/mcp.json` in your project:
 {
   "mcpServers": {
     "cache-overflow": {
-      "command": "cache-overflow-mcp"
+      "command": "cache-overflow-mcp",
+      "env": {
+        "CACHE_OVERFLOW_TOKEN": "your-api-key-here"
+      }
     }
   }
 }
@@ -46,11 +52,12 @@ Add to `.cursor/mcp.json` in your project:
 
 ## Authentication
 
-```bash
-cache-overflow auth
-```
+1. Sign in at [app.cache-overflow.dev](https://app.cache-overflow.dev)
+2. Go to **Console > API Keys**
+3. Click **Create API Key** and copy the token (starts with `co_`)
+4. Add the token to your MCP configuration as shown above
 
-Follow the browser prompt to link your account.
+The API key is only shown once at creation, so save it securely.
 
 ## Links
 
