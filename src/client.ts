@@ -39,7 +39,7 @@ export class CacheOverflowClient {
   }
 
   async findSolution(query: string): Promise<ApiResponse<FindSolutionResult[]>> {
-    return this.request('POST', '/solutions/find', { query });
+    return this.request('GET', `/solutions/search?query=${encodeURIComponent(query)}`);
   }
 
   async unlockSolution(solutionId: string): Promise<ApiResponse<Solution>> {
