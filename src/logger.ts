@@ -136,7 +136,7 @@ class Logger {
 
   logStartup(): void {
     this.info('MCP Server starting', {
-      version: '0.3.4',
+      version: '0.3.5',
       nodeVersion: process.version,
       platform: process.platform,
       arch: process.arch,

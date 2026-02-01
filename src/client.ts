@@ -33,7 +33,30 @@ export class CacheOverflowClient {
         body: body ? JSON.stringify(body) : undefined,
       });
 
-      const data = (await response.json()) as Record<string, unknown>;
+      // Read response as text first, then try to parse as JSON
+      const textResponse = await response.text();
+      const contentType = response.headers.get('content-type');
+      let data: Record<string, unknown>;
+
+      try {
+        data = JSON.parse(textResponse) as Record<string, unknown>;
+      } catch (jsonError) {
+        // If JSON parsing fails, log and return the text as error
+        logger.error('API returned non-JSON response', jsonError as Error, {
+          method,
+          path,
+          statusCode: response.status,
+          contentType,
+          responseText: textResponse.substring(0, 200), // Log first 200 chars
+          errorType: 'INVALID_JSON_RESPONSE',
+        });
+
+        // Return the text as an error message
+        return {
+          success: false,
+          error: textResponse || 'Invalid response from server'
+        };
+      }
 
       if (!response.ok) {
         const errorMessage = (data.error as string) ?? 'Unknown error';
