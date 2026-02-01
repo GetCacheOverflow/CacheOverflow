@@ -85,7 +85,23 @@ export class CacheOverflowClient {
   }
 
   async findSolution(query: string): Promise<ApiResponse<FindSolutionResult[]>> {
-    return this.request('GET', `/solutions/search?query=${encodeURIComponent(query)}`);
+    const result = await this.request<Array<{ id: string; query_title: string; solution_body?: string; human_verification_required: boolean }>>(
+      'GET',
+      `/solutions/search?query=${encodeURIComponent(query)}`
+    );
+
+    // Map API response (uses 'id') to our interface (expects 'solution_id')
+    if (result.success) {
+      const mappedData = result.data.map(solution => ({
+        solution_id: solution.id,
+        query_title: solution.query_title,
+        solution_body: solution.solution_body,
+        human_verification_required: solution.human_verification_required,
+      }));
+      return { success: true, data: mappedData };
+    }
+
+    return result as ApiResponse<FindSolutionResult[]>;
   }
 
   async unlockSolution(solutionId: string): Promise<ApiResponse<Solution>> {
