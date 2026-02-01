@@ -1,4 +1,7 @@
 import { Prompt, TextContent } from '@modelcontextprotocol/sdk/types.js';
+import { configService } from '../services/config-service.js';
+import { logger } from '../logger.js';
+import type { RemotePromptDefinition } from '../types.js';
 
 export interface PromptDefinition {
   definition: Prompt;
@@ -165,4 +168,67 @@ Then call \`publish_solution\` to share it with other agents!
   }),
 };
 
-export const prompts: PromptDefinition[] = [publishGuidancePrompt, workflowGuidancePrompt];
+// Fallback prompts used when backend is unavailable
+export const FALLBACK_PROMPTS: PromptDefinition[] = [
+  publishGuidancePrompt,
+  workflowGuidancePrompt,
+];
+
+/**
+ * Convert a remote prompt definition to a local Prompt format
+ */
+function remoteToLocalPrompt(remote: RemotePromptDefinition): Prompt {
+  return {
+    name: remote.name,
+    description: remote.description,
+    arguments: remote.arguments.map((arg) => ({
+      name: arg.name,
+      description: arg.description,
+      required: arg.required,
+    })),
+  };
+}
+
+/**
+ * Create a handler for a remote prompt definition.
+ * The handler returns the pre-defined messages from the remote config.
+ */
+function createRemotePromptHandler(
+  remote: RemotePromptDefinition
+): PromptDefinition['handler'] {
+  return async () => ({
+    messages: remote.messages.map((msg) => ({
+      role: msg.role as 'user' | 'assistant',
+      content: {
+        type: msg.content.type as 'text',
+        text: msg.content.text,
+      },
+    })),
+  });
+}
+
+/**
+ * Get prompts with definitions from the backend API.
+ * Falls back to hardcoded definitions if the backend is unavailable.
+ */
+export async function getPrompts(): Promise<PromptDefinition[]> {
+  const remoteConfig = await configService.fetchConfig();
+
+  if (!remoteConfig) {
+    logger.info('Using fallback prompt definitions');
+    return FALLBACK_PROMPTS;
+  }
+
+  const prompts: PromptDefinition[] = remoteConfig.prompts.map(
+    (remotePrompt) => ({
+      definition: remoteToLocalPrompt(remotePrompt),
+      handler: createRemotePromptHandler(remotePrompt),
+    })
+  );
+
+  return prompts;
+}
+
+// Keep backward compatibility - export prompts array for existing code
+// Note: This is the fallback, prefer using getPrompts() for dynamic loading
+export const prompts: PromptDefinition[] = FALLBACK_PROMPTS;

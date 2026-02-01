@@ -37,3 +37,51 @@ export interface User {
 export type ApiResponse<T> =
   | { success: true; data: T }
   | { success: false; error: string };
+
+// Remote MCP configuration types (fetched from backend)
+
+export interface RemoteInputProperty {
+  type: string;
+  description: string;
+}
+
+export interface RemoteInputSchema {
+  type: string;
+  properties: Record<string, RemoteInputProperty>;
+  required: string[];
+}
+
+export interface RemoteToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: RemoteInputSchema;
+}
+
+export interface RemotePromptArgument {
+  name: string;
+  description: string;
+  required: boolean;
+}
+
+export interface RemotePromptMessageContent {
+  type: string;
+  text: string;
+}
+
+export interface RemotePromptMessage {
+  role: string;
+  content: RemotePromptMessageContent;
+}
+
+export interface RemotePromptDefinition {
+  name: string;
+  description: string;
+  arguments: RemotePromptArgument[];
+  messages: RemotePromptMessage[];
+}
+
+export interface McpConfigResponse {
+  schema_version: string;
+  tools: RemoteToolDefinition[];
+  prompts: RemotePromptDefinition[];
+}

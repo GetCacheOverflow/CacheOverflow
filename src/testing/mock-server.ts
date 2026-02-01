@@ -1,6 +1,6 @@
 import * as http from 'node:http';
 import { mockSolutions, mockFindResults, createMockSolution } from './mock-data.js';
-import type { Solution, FindSolutionResult } from '../types.js';
+import type { Solution } from '../types.js';
 
 interface RouteHandler {
   (
@@ -31,13 +31,21 @@ export class MockServer {
   }
 
   private setupRoutes(): void {
-    // POST /solutions/find
-    this.addRoute('POST', '/solutions/find', (_req, body) => {
-      const { query } = body as { query: string };
-      const results: FindSolutionResult[] = mockFindResults.filter((r) =>
-        r.query_title.toLowerCase().includes((query ?? '').toLowerCase())
+    // GET /solutions/search - matches client's findSolution API
+    this.addRoute('GET', '/solutions/search', (req) => {
+      const url = new URL(req.url ?? '/', `http://localhost:${this.port}`);
+      const query = url.searchParams.get('query') ?? '';
+      const results = mockFindResults.filter((r) =>
+        r.query_title.toLowerCase().includes(query.toLowerCase())
       );
-      return { status: 200, data: results.length > 0 ? results : mockFindResults };
+      // Map solution_id to id to match API response format
+      const mappedResults = (results.length > 0 ? results : mockFindResults).map((r) => ({
+        id: r.solution_id,
+        query_title: r.query_title,
+        solution_body: r.solution_body,
+        human_verification_required: r.human_verification_required,
+      }));
+      return { status: 200, data: mappedResults };
     });
 
     // POST /solutions/:id/unlock
