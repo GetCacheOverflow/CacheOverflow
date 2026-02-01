@@ -1,5 +1,6 @@
 import http from 'http';
 import open from 'open';
+import { logger } from '../logger.js';
 
 const generateHTML = (title: string, body?: string): string => `
 <!DOCTYPE html>
@@ -307,12 +308,18 @@ export async function showVerificationDialog(
 
           switch (value) {
             case 'safe':
+              logger.info('User verified solution as safe', { solutionTitle: title });
               resolve(true);
               break;
             case 'unsafe':
+              logger.info('User verified solution as unsafe', { solutionTitle: title });
               resolve(false);
               break;
             default:
+              logger.warn('User verification dialog closed with unknown result', {
+                value,
+                solutionTitle: title
+              });
               resolve(null);
           }
         }
@@ -322,20 +329,53 @@ export async function showVerificationDialog(
       }
     });
 
+    server.on('error', (error) => {
+      logger.error('Verification dialog HTTP server error', error, {
+        solutionTitle: title,
+        errorType: 'VERIFICATION_DIALOG_ERROR',
+      });
+      if (!resolved) {
+        resolved = true;
+        resolve(null);
+      }
+    });
+
     server.listen(0, 'localhost', () => {
       const address = server.address();
       if (address && typeof address === 'object') {
         const url = `http://localhost:${address.port}`;
-        open(url);
+        logger.info('Verification dialog opened', {
+          port: address.port,
+          solutionTitle: title
+        });
+
+        open(url).catch((error) => {
+          logger.error('Failed to open verification dialog in browser', error, {
+            url,
+            solutionTitle: title,
+            errorType: 'BROWSER_OPEN_FAILURE',
+          });
+        });
 
         // Timeout after 55 seconds (within MCP client default 60s limit)
         setTimeout(() => {
           if (!resolved) {
             resolved = true;
             server.close();
+            logger.warn('Verification dialog timed out', { solutionTitle: title });
             resolve(null);
           }
         }, 55 * 1000);
+      } else {
+        logger.error('Failed to get server address for verification dialog', undefined, {
+          address,
+          solutionTitle: title,
+          errorType: 'SERVER_ADDRESS_ERROR',
+        });
+        if (!resolved) {
+          resolved = true;
+          resolve(null);
+        }
       }
     });
   });

@@ -1,5 +1,6 @@
 import { ApiResponse, Solution, FindSolutionResult } from './types.js';
 import { config } from './config.js';
+import { logger } from './logger.js';
 
 export class CacheOverflowClient {
   private apiUrl: string;
@@ -23,19 +24,41 @@ export class CacheOverflowClient {
       headers['Authorization'] = `Bearer ${this.authToken}`;
     }
 
-    const response = await fetch(`${this.apiUrl}${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    const url = `${this.apiUrl}${path}`;
 
-    const data = (await response.json()) as Record<string, unknown>;
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
 
-    if (!response.ok) {
-      return { success: false, error: (data.error as string) ?? 'Unknown error' };
+      const data = (await response.json()) as Record<string, unknown>;
+
+      if (!response.ok) {
+        const errorMessage = (data.error as string) ?? 'Unknown error';
+        logger.error('API request failed', undefined, {
+          method,
+          path,
+          statusCode: response.status,
+          errorMessage,
+          errorType: 'API_ERROR',
+        });
+        return { success: false, error: errorMessage };
+      }
+
+      return { success: true, data: data as T };
+    } catch (error) {
+      logger.error('Network or fetch error during API request', error as Error, {
+        method,
+        path,
+        url,
+        errorType: 'NETWORK_ERROR',
+      });
+
+      // Re-throw network errors so they can be handled by the caller
+      throw error;
     }
-
-    return { success: true, data: data as T };
   }
 
   async findSolution(query: string): Promise<ApiResponse<FindSolutionResult[]>> {

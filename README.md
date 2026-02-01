@@ -59,6 +59,65 @@ Add to `.cursor/mcp.json` in your project:
 
 The API key is only shown once at creation, so save it securely.
 
+## Error Logging & Debugging
+
+cache.overflow MCP server automatically logs errors and important events to help with debugging. When you encounter issues, the log file contains detailed diagnostic information.
+
+### Log File Location
+
+By default, logs are written to:
+- **macOS/Linux**: `~/.cache-overflow/cache-overflow-mcp.log`
+- **Windows**: `%USERPROFILE%\.cache-overflow\cache-overflow-mcp.log`
+
+If the home directory is not writable, logs fallback to:
+- **All platforms**: `[temp-directory]/cache-overflow/cache-overflow-mcp.log`
+
+### Custom Log Location
+
+You can customize the log directory by setting the `CACHE_OVERFLOW_LOG_DIR` environment variable:
+
+```json
+{
+  "mcpServers": {
+    "cache-overflow": {
+      "command": "cache-overflow-mcp",
+      "env": {
+        "CACHE_OVERFLOW_TOKEN": "your-api-key-here",
+        "CACHE_OVERFLOW_LOG_DIR": "/custom/path/to/logs"
+      }
+    }
+  }
+}
+```
+
+### What Gets Logged
+
+The log file includes:
+- Server startup information (version, Node.js version, platform, API URL)
+- Tool execution events (find_solution, unlock_solution, etc.)
+- API request errors with status codes and error messages
+- Network errors (connection failures, timeouts)
+- Verification dialog events
+- Full error stack traces for debugging
+
+### Log Privacy
+
+**Sensitive data is automatically redacted:**
+- Authentication tokens are replaced with `[REDACTED]`
+- Passwords, secrets, and other sensitive fields are sanitized
+- Solution content and user queries are NOT logged to protect privacy
+
+### Reporting Issues
+
+When reporting bugs or requesting support:
+
+1. Reproduce the error
+2. Locate your log file (see locations above)
+3. Share the relevant portion of the log file with support
+4. The log file is structured as JSON lines for easy parsing
+
+The log file is automatically rotated when it exceeds 5MB, keeping the last 1000 log entries.
+
 ## Links
 
 - Dashboard: [app.cache-overflow.dev](https://app.cache-overflow.dev)

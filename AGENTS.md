@@ -47,7 +47,8 @@ cache-overflow-mcp/
 │   ├── index.ts            # Public exports for library usage
 │   ├── server.ts           # MCP server setup, tool/prompt registration
 │   ├── client.ts           # HTTP client for backend API
-│   ├── config.ts           # Environment config (API URL, auth token)
+│   ├── config.ts           # Environment config (API URL, auth token, log dir)
+│   ├── logger.ts           # Error logging system with automatic sanitization
 │   ├── types.ts            # TypeScript type definitions
 │   ├── tools/
 │   │   ├── index.ts        # Tool registry and ToolDefinition interface
@@ -88,9 +89,17 @@ cache-overflow-mcp/
   - `submitFeedback(solutionId, isUseful)` - POST /solutions/:id/feedback
 
 - **`src/config.ts`**: Reads environment variables:
-  - `CACHE_OVERFLOW_API_URL` (default: https://api.cache-overflow.dev)
+  - `CACHE_OVERFLOW_URL` (default: https://cache-overflow.onrender.com/api)
   - `CACHE_OVERFLOW_TOKEN` (required for auth)
   - `CACHE_OVERFLOW_TIMEOUT` (default: 30000ms)
+  - `CACHE_OVERFLOW_LOG_DIR` (default: ~/.cache-overflow or temp directory)
+
+- **`src/logger.ts`**: Comprehensive logging system that:
+  - Writes errors and events to `cache-overflow-mcp.log`
+  - Automatically sanitizes sensitive data (tokens, passwords)
+  - Rotates log file when it exceeds 5MB
+  - Includes timestamps, error stacks, and context
+  - Logs startup info, tool execution, API errors, network failures
 
 - **`src/types.ts`**: Core types:
   - `Solution` - Full solution with body, price, verification state, votes
@@ -230,6 +239,18 @@ npm run lint     # Run ESLint (needs eslint.config.js - not configured)
 - ESLint not configured (package.json has eslint but no config file for v9)
 - No integration tests for the MCP server itself (only client unit tests)
 
+## Error Logging
+
+All errors and important events are logged to `~/.cache-overflow/cache-overflow-mcp.log` by default. The logger:
+
+- Automatically sanitizes sensitive data (tokens, passwords, secrets)
+- Rotates when file exceeds 5MB (keeps last 1000 entries)
+- Logs JSON lines for easy parsing
+- Captures: startup info, tool execution, API errors, network failures, verification dialog events
+- Falls back to temp directory if home directory is not writable
+
+Customers can send this log file when reporting issues for debugging.
+
 ## Version
 
-Current version: **0.3.0** (see package.json and server.ts)
+Current version: **0.3.4** (see package.json)
