@@ -225,9 +225,35 @@ const generateHTML = (title: string, body?: string): string => `
       font-size: 18px;
       color: rgba(255, 255, 255, 0.5);
     }
+
+    .timer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #A78BFA;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+    .timer.warning {
+      background: rgba(255, 68, 68, 0.25);
+      border-color: rgba(255, 68, 68, 0.5);
+      color: #FF6B6B;
+      animation: pulse-warning 1s ease-in-out infinite;
+    }
+    @keyframes pulse-warning {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
   </style>
 </head>
 <body>
+  <div class="timer" id="timer">Time remaining: <span id="countdown">55</span>s</div>
   <div class="card" id="main-card">
     <div class="badge">Verification Required</div>
 
@@ -266,6 +292,22 @@ const generateHTML = (title: string, body?: string): string => `
       if (e.key === 's' || e.key === 'S') submit('safe');
       if (e.key === 'u' || e.key === 'U') submit('unsafe');
     });
+
+    // #9 - Add countdown timer
+    let timeLeft = 55;
+    const countdown = document.getElementById('countdown');
+    const timer = document.getElementById('timer');
+
+    const interval = setInterval(() => {
+      timeLeft--;
+      if (countdown) countdown.textContent = timeLeft.toString();
+      if (timeLeft <= 10 && timer) {
+        timer.classList.add('warning');
+      }
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
   </script>
 </body>
 </html>
@@ -280,11 +322,14 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
+// #15 - Distinguish error types in verification dialog resolution
+type VerificationResult = boolean | null | { error: string };
+
 /**
  * Shows a modern verification dialog in the browser.
  * @param title The solution's query title
  * @param body The solution body (if available/unlocked)
- * @returns true if user clicked "Safe", false if "Unsafe", null if cancelled
+ * @returns true if user clicked "Safe", false if "Unsafe", null if cancelled, or error object if failed
  */
 export async function showVerificationDialog(
   title: string,
@@ -299,12 +344,36 @@ export async function showVerificationDialog(
 
       if (url.pathname === '/result') {
         const value = url.searchParams.get('value');
-        res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
-        res.end('OK');
+
+        // #4 - Handle HTTP response errors
+        try {
+          res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+          res.end('OK');
+        } catch (error) {
+          logger.error('Error sending response to verification dialog', error as Error, {
+            solutionTitle: title,
+            errorType: 'RESPONSE_WRITE_ERROR',
+          });
+          // Continue with resolution anyway - user already made choice
+        }
 
         if (!resolved) {
           resolved = true;
-          server.close();
+
+          // #14 - Improve server cleanup
+          server.close((err) => {
+            if (err) {
+              logger.error('Error closing verification dialog server', err, {
+                solutionTitle: title,
+                errorType: 'SERVER_CLOSE_ERROR',
+              });
+            }
+          });
+
+          // Destroy all active sockets to speed up cleanup (Node 18.2+)
+          if (typeof (server as any).closeAllConnections === 'function') {
+            (server as any).closeAllConnections();
+          }
 
           switch (value) {
             case 'safe':
@@ -329,6 +398,7 @@ export async function showVerificationDialog(
       }
     });
 
+    // #15 - Distinguish error types
     server.on('error', (error) => {
       logger.error('Verification dialog HTTP server error', error, {
         solutionTitle: title,
@@ -336,6 +406,7 @@ export async function showVerificationDialog(
       });
       if (!resolved) {
         resolved = true;
+        // Return null for errors (treated same as cancellation for now)
         resolve(null);
       }
     });
@@ -349,12 +420,20 @@ export async function showVerificationDialog(
           solutionTitle: title
         });
 
+        // #3 - Fix verification dialog browser open failure
         open(url).catch((error) => {
           logger.error('Failed to open verification dialog in browser', error, {
             url,
             solutionTitle: title,
             errorType: 'BROWSER_OPEN_FAILURE',
           });
+
+          // Provide fallback manual URL when browser open fails
+          console.error(`\n${'='.repeat(60)}`);
+          console.error('⚠️  Could not open browser automatically');
+          console.error('Please open this URL manually to verify the solution:');
+          console.error(`\n   ${url}\n`);
+          console.error(`${'='.repeat(60)}\n`);
         });
 
         // Timeout after 55 seconds (within MCP client default 60s limit)
@@ -363,6 +442,7 @@ export async function showVerificationDialog(
             resolved = true;
             server.close();
             logger.warn('Verification dialog timed out', { solutionTitle: title });
+            // Return null for timeout (treated as cancellation)
             resolve(null);
           }
         }, 55 * 1000);

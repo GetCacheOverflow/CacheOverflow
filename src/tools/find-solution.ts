@@ -1,5 +1,35 @@
 import { ToolDefinition } from './index.js';
 import { showVerificationDialog } from '../ui/verification-dialog.js';
+import { config } from '../config.js';
+
+// #6 - Improve error messages with context
+function getErrorTitle(error: string): string {
+  if (error.includes('timeout') || error.includes('timed out')) return 'Request Timed Out';
+  if (error.includes('network') || error.includes('fetch')) return 'Network Connection Failed';
+  if (error.includes('balance') || error.includes('insufficient')) return 'Insufficient Token Balance';
+  if (error.includes('auth') || error.includes('Authentication')) return 'Authentication Failed';
+  if (error.includes('Rate limit')) return 'Rate Limit Exceeded';
+  return 'Operation Failed';
+}
+
+function getRecoverySuggestions(error: string): string {
+  if (error.includes('timeout') || error.includes('timed out')) {
+    return '- Check your internet connection\n- Try again in a moment\n- The server may be experiencing high load';
+  }
+  if (error.includes('balance') || error.includes('insufficient')) {
+    return '- Check your balance with another tool or API call\n- Earn tokens by publishing solutions\n- Look for solutions with human_verification_required=false';
+  }
+  if (error.includes('auth') || error.includes('Authentication')) {
+    return '- Verify your CACHE_OVERFLOW_TOKEN environment variable is set correctly\n- Token should start with "co_"\n- Check if your token has expired';
+  }
+  if (error.includes('Rate limit')) {
+    return '- Wait the specified time before retrying\n- Consider using solutions with human_verification_required=false to avoid token costs';
+  }
+  if (error.includes('network') || error.includes('fetch')) {
+    return '- Check your internet connection\n- Verify the CACHE_OVERFLOW_URL is correct\n- Try again in a moment';
+  }
+  return '- Check the log file for details\n- Verify your CACHE_OVERFLOW_TOKEN is valid\n- Try again in a moment';
+}
 
 export const findSolution: ToolDefinition = {
   definition: {
@@ -18,12 +48,44 @@ export const findSolution: ToolDefinition = {
     },
   },
   handler: async (args, client) => {
-    const query = args.query as string;
+    // #5 - Add input validation
+    const query = (args.query as string || '').trim();
+
+    if (!query) {
+      return {
+        content: [{ type: 'text', text: 'Error: Query cannot be empty. Please provide a description of the problem you are trying to solve.' }],
+      };
+    }
+
+    if (query.length < 5) {
+      return {
+        content: [{ type: 'text', text: 'Error: Query must be at least 5 characters long. Please provide more details about the problem.' }],
+      };
+    }
+
+    if (query.length > 500) {
+      return {
+        content: [{ type: 'text', text: 'Error: Query must be less than 500 characters. Please provide a more concise description.' }],
+      };
+    }
+
     const result = await client.findSolution(query);
 
     if (!result.success) {
+      // #6 - Improve error messages with context
+      const errorMessage = [
+        `❌ ${getErrorTitle(result.error || '')}`,
+        '',
+        result.error,
+        '',
+        '💡 **What to try:**',
+        getRecoverySuggestions(result.error || ''),
+        '',
+        `📋 **Logs**: Check ${config.logging.logDir || '~/.cache-overflow'}/cache-overflow-mcp.log for details`,
+      ].join('\n');
+
       return {
-        content: [{ type: 'text', text: `Error: ${result.error}` }],
+        content: [{ type: 'text', text: errorMessage }],
       };
     }
 
@@ -37,7 +99,17 @@ export const findSolution: ToolDefinition = {
 
         // If user made a choice (not cancelled), submit verification
         if (verificationResult !== null) {
-          await client.submitVerification(solution.solution_id, verificationResult);
+          // #10 - Catch verification submission errors
+          try {
+            const submitResult = await client.submitVerification(solution.solution_id, verificationResult);
+            if (!submitResult.success) {
+              // Log but don't fail - user still gets the solution content
+              console.warn(`Warning: Failed to submit verification for solution ${solution.solution_id}: ${submitResult.error}`);
+            }
+          } catch (error) {
+            // Log but don't fail - user still gets the solution content
+            console.warn(`Warning: Error submitting verification for solution ${solution.solution_id}:`, error);
+          }
         }
       }
     }

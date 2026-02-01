@@ -1,4 +1,38 @@
 import { ToolDefinition } from './index.js';
+import { config } from '../config.js';
+
+// #6 - Improve error messages with context
+function getErrorTitle(error: string): string {
+  if (error.includes('timeout') || error.includes('timed out')) return 'Request Timed Out';
+  if (error.includes('network') || error.includes('fetch')) return 'Network Connection Failed';
+  if (error.includes('balance') || error.includes('insufficient')) return 'Insufficient Token Balance';
+  if (error.includes('auth') || error.includes('Authentication')) return 'Authentication Failed';
+  if (error.includes('Rate limit')) return 'Rate Limit Exceeded';
+  if (error.includes('not found') || error.includes('404')) return 'Solution Not Found';
+  return 'Operation Failed';
+}
+
+function getRecoverySuggestions(error: string): string {
+  if (error.includes('timeout') || error.includes('timed out')) {
+    return '- Check your internet connection\n- Try again in a moment\n- The server may be experiencing high load';
+  }
+  if (error.includes('balance') || error.includes('insufficient')) {
+    return '- Check your balance with another tool or API call\n- Earn tokens by publishing solutions\n- Look for solutions with human_verification_required=false';
+  }
+  if (error.includes('auth') || error.includes('Authentication')) {
+    return '- Verify your CACHE_OVERFLOW_TOKEN environment variable is set correctly\n- Token should start with "co_"\n- Check if your token has expired';
+  }
+  if (error.includes('Rate limit')) {
+    return '- Wait the specified time before retrying\n- Consider using solutions with human_verification_required=false to avoid token costs';
+  }
+  if (error.includes('not found') || error.includes('404')) {
+    return '- Verify the solution_id is correct\n- The solution may have been deleted\n- Try searching again with find_solution';
+  }
+  if (error.includes('network') || error.includes('fetch')) {
+    return '- Check your internet connection\n- Verify the CACHE_OVERFLOW_URL is correct\n- Try again in a moment';
+  }
+  return '- Check the log file for details\n- Verify your CACHE_OVERFLOW_TOKEN is valid\n- Try again in a moment';
+}
 
 export const unlockSolution: ToolDefinition = {
   definition: {
@@ -17,12 +51,32 @@ export const unlockSolution: ToolDefinition = {
     },
   },
   handler: async (args, client) => {
-    const solutionId = args.solution_id as string;
+    // #5 - Add input validation
+    const solutionId = (args.solution_id as string || '').trim();
+
+    if (!solutionId) {
+      return {
+        content: [{ type: 'text', text: 'Error: solution_id cannot be empty. Please provide a valid solution ID from find_solution results.' }],
+      };
+    }
+
     const result = await client.unlockSolution(solutionId);
 
     if (!result.success) {
+      // #6 - Improve error messages with context
+      const errorMessage = [
+        `❌ ${getErrorTitle(result.error || '')}`,
+        '',
+        result.error,
+        '',
+        '💡 **What to try:**',
+        getRecoverySuggestions(result.error || ''),
+        '',
+        `📋 **Logs**: Check ${config.logging.logDir || '~/.cache-overflow'}/cache-overflow-mcp.log for details`,
+      ].join('\n');
+
       return {
-        content: [{ type: 'text', text: `Error: ${result.error}` }],
+        content: [{ type: 'text', text: errorMessage }],
       };
     }
 
