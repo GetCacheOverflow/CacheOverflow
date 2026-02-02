@@ -25,10 +25,10 @@ class ConfigService {
       return this.cache.data;
     }
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
+    try {
       const response = await fetch(`${config.api.url}/mcp/config`, {
         method: 'GET',
         headers: {
@@ -36,8 +36,6 @@ class ConfigService {
         },
         signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         logger.warn('Failed to fetch MCP config', {
@@ -82,6 +80,9 @@ class ConfigService {
         }
       }
       return this.getCachedOrNull();
+    } finally {
+      // Always clear timeout to prevent leak
+      clearTimeout(timeoutId);
     }
   }
 

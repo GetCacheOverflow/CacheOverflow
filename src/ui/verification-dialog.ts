@@ -276,16 +276,47 @@ const generateHTML = (title: string, body?: string): string => `
   </div>
 
   <script>
+    // Store interval reference for proper cleanup
+    let countdownInterval = null;
+
     function submit(result) {
+      // Clear countdown interval to prevent resource leak
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+
       const isSafe = result === 'safe';
-      document.getElementById('main-card').innerHTML = \`
-        <div class="completed">
-          <div class="completed-icon \${result}">\${isSafe ? '&#10003;' : '&#10005;'}</div>
-          <h2>\${isSafe ? 'Marked as Safe' : 'Marked as Unsafe'}</h2>
-          <p>You can close this tab now</p>
-        </div>
-      \`;
-      fetch('/result?value=' + result).catch(() => {});
+      const mainCard = document.getElementById('main-card');
+
+      // Clear existing content safely
+      if (mainCard) {
+        mainCard.textContent = '';
+
+        // Create DOM elements instead of innerHTML to avoid XSS
+        const completedDiv = document.createElement('div');
+        completedDiv.className = 'completed';
+
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'completed-icon ' + (result === 'safe' ? 'safe' : result === 'unsafe' ? 'unsafe' : '');
+        iconDiv.innerHTML = isSafe ? '&#10003;' : '&#10005;';
+
+        const h2 = document.createElement('h2');
+        h2.textContent = isSafe ? 'Marked as Safe' : 'Marked as Unsafe';
+
+        const p = document.createElement('p');
+        p.textContent = 'You can close this tab now';
+
+        completedDiv.appendChild(iconDiv);
+        completedDiv.appendChild(h2);
+        completedDiv.appendChild(p);
+        mainCard.appendChild(completedDiv);
+      }
+
+      // Log errors properly instead of silently swallowing them
+      fetch('/result?value=' + result).catch((err) => {
+        console.error('Failed to send result to server:', err);
+      });
     }
 
     document.addEventListener('keydown', (e) => {
@@ -298,14 +329,15 @@ const generateHTML = (title: string, body?: string): string => `
     const countdown = document.getElementById('countdown');
     const timer = document.getElementById('timer');
 
-    const interval = setInterval(() => {
+    countdownInterval = setInterval(() => {
       timeLeft--;
       if (countdown) countdown.textContent = timeLeft.toString();
       if (timeLeft <= 10 && timer) {
         timer.classList.add('warning');
       }
       if (timeLeft <= 0) {
-        clearInterval(interval);
+        clearInterval(countdownInterval);
+        countdownInterval = null;
       }
     }, 1000);
   </script>
@@ -331,6 +363,11 @@ type VerificationResult = boolean | null | { error: string };
  * @param body The solution body (if available/unlocked)
  * @returns true if user clicked "Safe", false if "Unsafe", null if cancelled, or error object if failed
  */
+// Type for Node.js Server with closeAllConnections method
+interface ServerWithCloseAll {
+  closeAllConnections?: () => void;
+}
+
 export async function showVerificationDialog(
   title: string,
   body?: string
@@ -338,6 +375,33 @@ export async function showVerificationDialog(
   return new Promise((resolve) => {
     const html = generateHTML(title, body);
     let resolved = false;
+    let timeoutHandle: NodeJS.Timeout | null = null;
+
+    // Cleanup function to prevent multiple server close calls
+    const cleanupServer = () => {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+
+      // Remove error listener to prevent leak
+      server.removeListener('error', errorHandler);
+
+      // Close server gracefully
+      server.close((err) => {
+        if (err) {
+          logger.error('Error closing verification dialog server', err, {
+            solutionTitle: title,
+            errorType: 'SERVER_CLOSE_ERROR',
+          });
+        }
+      });
+
+      // Destroy all active sockets using type guard
+      if ('closeAllConnections' in server && typeof (server as ServerWithCloseAll).closeAllConnections === 'function') {
+        (server as ServerWithCloseAll).closeAllConnections!();
+      }
+    };
 
     const server = http.createServer((req, res) => {
       const url = new URL(req.url || '/', `http://localhost`);
@@ -345,9 +409,9 @@ export async function showVerificationDialog(
       if (url.pathname === '/result') {
         const value = url.searchParams.get('value');
 
-        // #4 - Handle HTTP response errors
+        // Remove overly permissive CORS header (local server doesn't need it)
         try {
-          res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+          res.writeHead(200, { 'Content-Type': 'text/plain' });
           res.end('OK');
         } catch (error) {
           logger.error('Error sending response to verification dialog', error as Error, {
@@ -359,21 +423,7 @@ export async function showVerificationDialog(
 
         if (!resolved) {
           resolved = true;
-
-          // #14 - Improve server cleanup
-          server.close((err) => {
-            if (err) {
-              logger.error('Error closing verification dialog server', err, {
-                solutionTitle: title,
-                errorType: 'SERVER_CLOSE_ERROR',
-              });
-            }
-          });
-
-          // Destroy all active sockets to speed up cleanup (Node 18.2+)
-          if (typeof (server as any).closeAllConnections === 'function') {
-            (server as any).closeAllConnections();
-          }
+          cleanupServer();
 
           switch (value) {
             case 'safe':
@@ -398,22 +448,40 @@ export async function showVerificationDialog(
       }
     });
 
-    // #15 - Distinguish error types
-    server.on('error', (error) => {
+    // Store error handler reference for cleanup
+    const errorHandler = (error: Error) => {
       logger.error('Verification dialog HTTP server error', error, {
         solutionTitle: title,
         errorType: 'VERIFICATION_DIALOG_ERROR',
       });
       if (!resolved) {
         resolved = true;
+        cleanupServer();
         // Return null for errors (treated same as cancellation for now)
         resolve(null);
       }
-    });
+    };
+
+    server.on('error', errorHandler);
 
     server.listen(0, 'localhost', () => {
       const address = server.address();
       if (address && typeof address === 'object') {
+        // Validate server is bound to localhost only for security
+        if (address.address !== 'localhost' && address.address !== '127.0.0.1' && address.address !== '::1') {
+          logger.error('Server must bind to localhost only', undefined, {
+            actualAddress: address.address,
+            solutionTitle: title,
+            errorType: 'INVALID_BIND_ADDRESS',
+          });
+          if (!resolved) {
+            resolved = true;
+            cleanupServer();
+            resolve(null);
+          }
+          return;
+        }
+
         const url = `http://localhost:${address.port}`;
         logger.info('Verification dialog opened', {
           port: address.port,
@@ -437,10 +505,10 @@ export async function showVerificationDialog(
         });
 
         // Timeout after 55 seconds (within MCP client default 60s limit)
-        setTimeout(() => {
+        timeoutHandle = setTimeout(() => {
           if (!resolved) {
             resolved = true;
-            server.close();
+            cleanupServer();
             logger.warn('Verification dialog timed out', { solutionTitle: title });
             // Return null for timeout (treated as cancellation)
             resolve(null);

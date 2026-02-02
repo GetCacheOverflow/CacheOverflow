@@ -27,9 +27,7 @@ export class CacheOverflowClient {
     if (!this.authToken) {
       logger.warn('No CACHE_OVERFLOW_TOKEN provided - all API calls will fail', {});
     } else if (!this.authToken.startsWith('co_')) {
-      logger.warn('Invalid token format - tokens should start with "co_"', {
-        tokenPrefix: this.authToken.substring(0, 3),
-      });
+      logger.warn('Invalid token format - tokens should start with "co_"', {});
     }
   }
 
@@ -46,7 +44,8 @@ export class CacheOverflowClient {
       headers['Authorization'] = `Bearer ${this.authToken}`;
     }
 
-    const url = `${this.apiUrl}${path}`;
+    // Use URL constructor for safer URL construction
+    const url = new URL(path, this.apiUrl).toString();
 
     // #11 - Add request logging for debugging
     logger.info('API request', {
@@ -66,8 +65,6 @@ export class CacheOverflowClient {
         body: body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
 
       // #11 - Add response logging
       logger.info('API response', {
@@ -147,8 +144,6 @@ export class CacheOverflowClient {
 
       return { success: true, data: data as T };
     } catch (error) {
-      clearTimeout(timeoutId);
-
       // #1 - Handle timeout errors specifically
       if ((error as Error).name === 'AbortError') {
         logger.error('Request timed out', error as Error, {
@@ -173,6 +168,9 @@ export class CacheOverflowClient {
 
       // Re-throw network errors so they can be handled by retry logic
       throw error;
+    } finally {
+      // Always clear timeout to prevent leak
+      clearTimeout(timeoutId);
     }
   }
 

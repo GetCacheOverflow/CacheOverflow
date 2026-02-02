@@ -60,6 +60,13 @@ export const unlockSolution: ToolDefinition = {
       };
     }
 
+    // Validate solution_id format to prevent injection attacks
+    if (!/^[a-zA-Z0-9_-]+$/.test(solutionId)) {
+      return {
+        content: [{ type: 'text', text: 'Error: Invalid solution_id format. Must contain only alphanumeric characters, hyphens, and underscores.' }],
+      };
+    }
+
     const result = await client.unlockSolution(solutionId);
 
     if (!result.success) {

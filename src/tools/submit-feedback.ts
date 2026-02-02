@@ -65,6 +65,13 @@ export const submitFeedback: ToolDefinition = {
       };
     }
 
+    // Validate solution_id format to prevent injection attacks
+    if (!/^[a-zA-Z0-9_-]+$/.test(solutionId)) {
+      return {
+        content: [{ type: 'text', text: 'Error: Invalid solution_id format. Must contain only alphanumeric characters, hyphens, and underscores.' }],
+      };
+    }
+
     if (typeof isUseful !== 'boolean') {
       return {
         content: [{ type: 'text', text: 'Error: is_useful must be a boolean (true or false).' }],
