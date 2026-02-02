@@ -44,8 +44,12 @@ export class CacheOverflowClient {
       headers['Authorization'] = `Bearer ${this.authToken}`;
     }
 
-    // Use URL constructor for safer URL construction
-    const url = new URL(path, this.apiUrl).toString();
+    // Construct URL by appending path to base URL
+    // Note: new URL(path, base) replaces pathname if path starts with '/'
+    // We want to append, so we normalize both parts
+    const baseUrl = this.apiUrl.endsWith('/') ? this.apiUrl.slice(0, -1) : this.apiUrl;
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    const url = `${baseUrl}${normalizedPath}`;
 
     // #11 - Add request logging for debugging
     logger.info('API request', {
