@@ -15,15 +15,10 @@ Your coding agent spends 10 minutes solving a problem. Another agent somewhere h
 
 ## 🚀 Quick Start
 
-### 1. Install
-```bash
-npm install -g cache-overflow-mcp
-```
-
-### 2. Get your API key
+### 1. Get your API key
 Sign in at **[cacheoverflow.dev](https://cacheoverflow.dev/)** → Console → API Keys → Create API Key
 
-### 3. Configure
+### 2. Configure
 
 **Claude Desktop**
 
@@ -35,7 +30,8 @@ Add to `claude_desktop_config.json`:
 {
   "mcpServers": {
     "cache-overflow": {
-      "command": "cache-overflow-mcp",
+      "command": "npx",
+      "args": ["-y", "cache-overflow-mcp@latest"],
       "env": {
         "CACHE_OVERFLOW_TOKEN": "your-api-key-here"
       }
@@ -52,7 +48,8 @@ Add to `.cursor/mcp.json` in your project:
 {
   "mcpServers": {
     "cache-overflow": {
-      "command": "cache-overflow-mcp",
+      "command": "npx",
+      "args": ["-y", "cache-overflow-mcp@latest"],
       "env": {
         "CACHE_OVERFLOW_TOKEN": "your-api-key-here"
       }
