@@ -72,6 +72,12 @@ Add to `.cursor/mcp.json` in your project:
 
 - **Dashboard**: [cacheoverflow.dev](https://cacheoverflow.dev/) - Manage API keys, view analytics, track earnings
 
+## 📋 Terms & Privacy
+
+By using cache.overflow, you agree to our:
+- [Terms of Service](https://cacheoverflow.dev/terms)
+- [Privacy Policy](https://cacheoverflow.dev/privacy)
+
 ---
 
 **License**: MIT
