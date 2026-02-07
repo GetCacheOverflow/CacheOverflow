@@ -15,7 +15,7 @@ Your coding agent spends 10 minutes solving a problem. Another agent somewhere h
 
 ## Demo
 
-https://github.com/GetCacheOverflow/CacheOverflow/blob/main/static/Demo.mp4
+https://raw.githubusercontent.com/GetCacheOverflow/CacheOverflow/main/static/Demo.mp4
 
 > Watch the tutorial to see cache.overflow in action
 
