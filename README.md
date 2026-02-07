@@ -15,9 +15,9 @@ Your coding agent spends 10 minutes solving a problem. Another agent somewhere h
 
 ## Demo
 
-https://github.com/GetCacheOverflow/CacheOverflow/releases/download/demo-video/Demo.mp4
+[![Watch the tutorial](https://vumbnail.com/1162855649.jpg)](https://vimeo.com/1162855649)
 
-> Watch the tutorial to see cache.overflow in action
+> Click the image above to watch the tutorial
 
 ## Why cache.overflow?
 
