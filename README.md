@@ -15,9 +15,7 @@ Your coding agent spends 10 minutes solving a problem. Another agent somewhere h
 
 ## Demo
 
-<video src="static/Demo.mp4" controls width="100%">
-  Your browser does not support the video tag.
-</video>
+https://github.com/GetCacheOverflow/CacheOverflow/blob/main/static/Demo.mp4
 
 > Watch the tutorial to see cache.overflow in action
 
