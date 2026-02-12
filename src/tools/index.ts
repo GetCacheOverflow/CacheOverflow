@@ -1,7 +1,6 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { CacheOverflowClient } from '../client.js';
 import { configService } from '../services/config-service.js';
-import { logger } from '../logger.js';
 import type { RemoteToolDefinition } from '../types.js';
 import { findSolution } from './find-solution.js';
 import { unlockSolution } from './unlock-solution.js';
@@ -32,15 +31,6 @@ const toolHandlers: Record<
   submit_feedback: submitFeedback.handler,
 };
 
-// Fallback tools used when backend is unavailable
-export const FALLBACK_TOOLS: ToolDefinition[] = [
-  findSolution,
-  unlockSolution,
-  publishSolution,
-  submitVerification,
-  submitFeedback,
-];
-
 /**
  * Convert a remote tool definition to a local Tool format
  */
@@ -58,15 +48,10 @@ function remoteToLocalTool(remote: RemoteToolDefinition): Tool {
 
 /**
  * Get tools with definitions from the backend API.
- * Falls back to hardcoded definitions if the backend is unavailable.
+ * Throws if the backend is unavailable.
  */
 export async function getTools(): Promise<ToolDefinition[]> {
   const remoteConfig = await configService.fetchConfig();
-
-  if (!remoteConfig) {
-    logger.info('Using fallback tool definitions');
-    return FALLBACK_TOOLS;
-  }
 
   const tools: ToolDefinition[] = [];
 
@@ -86,7 +71,3 @@ export async function getTools(): Promise<ToolDefinition[]> {
 
   return tools;
 }
-
-// Keep backward compatibility - export tools array for existing code
-// Note: This is the fallback, prefer using getTools() for dynamic loading
-export const tools: ToolDefinition[] = FALLBACK_TOOLS;

@@ -9,13 +9,14 @@ import {
 import { CacheOverflowClient } from './client.js';
 import { getTools } from './tools/index.js';
 import { getPrompts } from './prompts/index.js';
+import { configService } from './services/config-service.js';
 import { logger } from './logger.js';
 
 export class CacheOverflowServer {
   private server: Server;
   private client: CacheOverflowClient;
 
-  constructor() {
+  private constructor(instructions: string) {
     this.server = new Server(
       {
         name: 'cache-overflow',
@@ -26,11 +27,27 @@ export class CacheOverflowServer {
           tools: {},
           prompts: {},
         },
+        instructions,
       }
     );
 
     this.client = new CacheOverflowClient();
     this.setupHandlers();
+  }
+
+  /**
+   * Create a CacheOverflowServer, fetching configuration from the remote backend.
+   * Throws if the backend is unavailable or returns no instructions.
+   */
+  static async create(): Promise<CacheOverflowServer> {
+    const remoteConfig = await configService.fetchConfig();
+
+    if (!remoteConfig.instructions) {
+      throw new Error('Remote config missing instructions field');
+    }
+
+    logger.info('Using remote instructions from backend');
+    return new CacheOverflowServer(remoteConfig.instructions);
   }
 
   private setupHandlers(): void {

@@ -8,7 +8,7 @@ async function main() {
   logger.logStartup();
   logger.info(`Log file location: ${logger.getLogFilePath()}`);
 
-  const server = new CacheOverflowServer();
+  const server = await CacheOverflowServer.create();
   await server.start();
 }
 

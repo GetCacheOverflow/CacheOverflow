@@ -84,4 +84,5 @@ export interface McpConfigResponse {
   schema_version: string;
   tools: RemoteToolDefinition[];
   prompts: RemotePromptDefinition[];
+  instructions?: string;
 }
