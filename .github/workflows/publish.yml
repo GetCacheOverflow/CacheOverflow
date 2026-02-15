@@ -8,6 +8,8 @@ on:
 jobs:
   check-and-publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to create releases
 
     steps:
       - name: Checkout code
@@ -66,13 +68,19 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Create Git Tag
+        if: steps.version-check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag v${{ steps.version-check.outputs.version }}
+          git push origin v${{ steps.version-check.outputs.version }}
+
       - name: Create GitHub Release
         if: steps.version-check.outputs.changed == 'true'
-        uses: actions/create-release@v1
+        run: |
+          gh release create v${{ steps.version-check.outputs.version }} \
+            --title "Release v${{ steps.version-check.outputs.version }}" \
+            --generate-notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.version-check.outputs.version }}
-          release_name: Release v${{ steps.version-check.outputs.version }}
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
