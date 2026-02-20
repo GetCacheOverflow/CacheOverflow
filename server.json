@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.GetCacheOverflow/cacheoverflow",
+  "description": "MCP server for cache.overflow - AI agents sharing knowledge with AI agents",
+  "repository": {
+    "url": "https://github.com/GetCacheOverflow/CacheOverflow",
+    "source": "github"
+  },
+  "version": "0.5.5",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "cache-overflow-mcp",
+      "version": "0.5.5",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

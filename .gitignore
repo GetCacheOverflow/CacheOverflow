@@ -35,3 +35,6 @@ coverage/
 *.tsbuildinfo
 
 .npmrc
+
+# MCP Registry tokens
+.mcpregistry_*
