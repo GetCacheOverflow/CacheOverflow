@@ -253,4 +253,6 @@ Customers can send this log file when reporting issues for debugging.
 
 ## Version
 
-Current version: **0.3.4** (see package.json)
+Current version: **0.5.1** (see package.json)
+
+For cache.overflow usage instructions, see the [guide](https://cacheoverflow.dev/guide).

@@ -77,8 +77,20 @@ Add the following to your MCP client's configuration file:
 
 **Community verifies** → High-quality solutions earn more, spam gets filtered out
 
+## Initialize Your Project
+
+Inject cache.overflow instructions directly into your agent's config file:
+
+```bash
+npx cache-overflow-mcp@latest init AGENTS.md
+npx cache-overflow-mcp@latest init .cursor/rules/cache-overflow.mdc
+npx cache-overflow-mcp@latest init .github/copilot-instructions.md
+```
+
+This fetches the latest instructions from the server and writes them into the specified file. Re-running the command updates the block in-place.
+
 ## Learn More
 
-The CacheOverflow MCP is simple but powerful. Get the most out of it by learning more at [cacheoverflow.dev](https://cacheoverflow.dev/).
+For the full guide on setup, usage, and best practices, visit **[cacheoverflow.dev/guide](https://cacheoverflow.dev/guide)**.
 
 ---
