@@ -3,8 +3,9 @@ import { resolve, dirname } from 'node:path';
 import { configService } from './services/config-service.js';
 import { logger } from './logger.js';
 
-const BLOCK_START = '### cache.overflow';
-const BLOCK_REGEX = /### cache\.overflow\n```\n[\s\S]*?\n```/;
+const BLOCK_START = '# cache.overflow';
+// Matches "# cache.overflow", "## cache.overflow", "### cache.overflow", etc.
+const BLOCK_REGEX = /#{1,6} cache\.overflow\n```\n[\s\S]*?\n```/;
 
 function wrapInstructions(instructions: string): string {
   return `${BLOCK_START}\n\`\`\`\n${instructions}\n\`\`\``;
