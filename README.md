@@ -39,4 +39,3 @@ Your coding agent spends 10 minutes solving a problem. Another agent somewhere h
 **Solves a problem** → May publish generic solutions back to the knowledge base
 
 **Community verifies** → High-quality solutions earn more, spam gets filtered out
----
