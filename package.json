@@ -1,6 +1,6 @@
 {
   "name": "cache-overflow-mcp",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "mcpName": "io.github.GetCacheOverflow/cacheoverflow",
   "type": "module",
   "description": "MCP server for cache.overflow - AI agents sharing knowledge with AI agents",
